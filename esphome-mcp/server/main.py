@@ -4,6 +4,10 @@ import json
 import logging
 import os
 import uvicorn
+
+# Prevent UV from failing package resolution due to Home Assistant wheels index constraints
+os.environ["UV_INDEX_STRATEGY"] = "unsafe-best-match"
+
 from mcp.server.fastmcp import FastMCP
 
 from . import tools
@@ -36,46 +40,51 @@ def esphome_list_devices() -> str:
 
 
 @mcp.tool()
-async def esphome_validate(device: str) -> str:
+async def esphome_validate(device: str, timeout: int | None = None) -> str:
     """Validate an ESPHome device config.
 
     Verifies syntax and semantic configuration. Useful to run before esphome_compile or esphome_flash to check for configuration errors.
 
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
+        timeout: Optional override for the command timeout in seconds.
     """
-    return await tools.validate(device)
+    return await tools.validate(device, timeout)
 
 
 @mcp.tool()
-async def esphome_compile(device: str) -> str:
+async def esphome_compile(device: str, timeout: int | None = None) -> str:
     """Compile ESPHome firmware for a device.
 
     Compiles the binary. It is recommended to run esphome_validate first to verify syntax.
     Use esphome_flash instead if you want to compile AND upload it to the device.
+    Note: Compilations can take several minutes on slower hosts. The AI client can increase the timeout parameter for the initial compilation.
 
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
+        timeout: Optional override for the command timeout in seconds.
     """
-    return await tools.compile_device(device)
+    return await tools.compile_device(device, timeout)
 
 
 @mcp.tool()
-async def esphome_flash(device: str) -> str:
-    """OTA flash a device.
+async def esphome_flash(device: str, port: str = "OTA", timeout: int | None = None) -> str:
+    """OTA or serial flash a device.
 
-    Compiles and uploads the firmware wirelessly. It is recommended to run esphome_validate
+    Compiles and uploads the firmware. It is recommended to run esphome_validate
     first to verify syntax, and highly recommended to run esphome_logs immediately after
     flashing completes to verify that the device successfully booted and connected to services.
 
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
+        port: The target port/address to use for flashing (e.g. '/dev/ttyUSB0', 'OTA'). Defaults to 'OTA'.
+        timeout: Optional override for the command timeout in seconds.
     """
-    return await tools.flash(device)
+    return await tools.flash(device, port, timeout)
 
 
 @mcp.tool()
-async def esphome_logs(device: str, num_lines: int = 50, duration: int = 5) -> str:
+async def esphome_logs(device: str, num_lines: int = 50, duration: int = 5, port: str = "OTA") -> str:
     """Get recent logs from an ESPHome device.
 
     Captures a snapshot of logs by listening for a specific duration.
@@ -85,8 +94,9 @@ async def esphome_logs(device: str, num_lines: int = 50, duration: int = 5) -> s
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
         num_lines: Number of log lines to return (default 50).
         duration: Time in seconds to listen for logs (default 5).
+        port: The target port/address to receive logs from (e.g. '/dev/ttyUSB0', 'OTA'). Defaults to 'OTA'.
     """
-    return await tools.logs(device, num_lines, duration)
+    return await tools.logs(device, num_lines, duration, port)
 
 
 @mcp.tool()
@@ -138,7 +148,6 @@ def esphome_pull_fonts(filenames: list[str] | None = None) -> str:
     """
     result = tools.pull_fonts(filenames)
     return json.dumps(result, indent=2)
-
 
 # ---------------------------------------------------------------------------
 # ASGI app with auth middleware

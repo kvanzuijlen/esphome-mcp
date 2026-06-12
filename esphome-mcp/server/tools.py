@@ -199,40 +199,43 @@ def list_devices() -> str:
     return "\n".join(lines)
 
 
-async def validate(device: str) -> str:
+async def validate(device: str, timeout: int | None = None) -> str:
     """Validate an ESPHome device config."""
     try:
         yaml_path = _device_yaml_path(device)
         if not os.path.isfile(yaml_path):
             return f"Device config not found: {yaml_path}"
-        return await _run_async([ESPHOME_BIN, "config", yaml_path], timeout=VALIDATE_TIMEOUT)
+        actual_timeout = timeout if timeout is not None else VALIDATE_TIMEOUT
+        return await _run_async([ESPHOME_BIN, "config", yaml_path], timeout=actual_timeout)
     except PermissionError as e:
         return str(e)
 
 
-async def compile_device(device: str) -> str:
+async def compile_device(device: str, timeout: int | None = None) -> str:
     """Compile ESPHome firmware for a device."""
     try:
         yaml_path = _device_yaml_path(device)
         if not os.path.isfile(yaml_path):
             return f"Device config not found: {yaml_path}"
-        return await _run_async([ESPHOME_BIN, "compile", yaml_path], timeout=COMPILE_TIMEOUT)
+        actual_timeout = timeout if timeout is not None else COMPILE_TIMEOUT
+        return await _run_async([ESPHOME_BIN, "compile", yaml_path], timeout=actual_timeout)
     except PermissionError as e:
         return str(e)
 
 
-async def flash(device: str) -> str:
-    """OTA flash a device."""
+async def flash(device: str, port: str = "OTA", timeout: int | None = None) -> str:
+    """OTA/serial flash a device."""
     try:
         yaml_path = _device_yaml_path(device)
         if not os.path.isfile(yaml_path):
             return f"Device config not found: {yaml_path}"
-        return await _run_async([ESPHOME_BIN, "run", yaml_path, "--no-logs"], timeout=FLASH_TIMEOUT)
+        actual_timeout = timeout if timeout is not None else FLASH_TIMEOUT
+        return await _run_async([ESPHOME_BIN, "run", yaml_path, "--no-logs", "--device", port], timeout=actual_timeout)
     except PermissionError as e:
         return str(e)
 
 
-async def logs(device: str, num_lines: int = 50, duration: int = 5) -> str:
+async def logs(device: str, num_lines: int = 50, duration: int = 5, port: str = "OTA") -> str:
     """Get recent logs from an ESPHome device."""
     try:
         yaml_path = _device_yaml_path(device)
@@ -240,7 +243,7 @@ async def logs(device: str, num_lines: int = 50, duration: int = 5) -> str:
             return f"Device config not found: {yaml_path}"
         # We enforce a timeout on the ESPHome logs CLI itself via asyncio timeout
         actual_duration = max(1, duration)
-        output = await _run_async([ESPHOME_BIN, "logs", yaml_path], timeout=actual_duration, capture_on_timeout=True)
+        output = await _run_async([ESPHOME_BIN, "logs", yaml_path, "--device", port], timeout=actual_duration, capture_on_timeout=True)
         lines = output.splitlines()
         if len(lines) > num_lines:
             lines = lines[-num_lines:]

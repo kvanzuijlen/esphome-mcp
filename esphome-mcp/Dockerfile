@@ -1,16 +1,17 @@
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
-# Install build dependencies for ESPHome native compilation
+# Install build dependencies and glibc compatibility for ESPHome/PlatformIO compilation
 RUN apk add --no-cache \
-    gcc \
-    g++ \
-    musl-dev \
+    build-base \
+    libc6-compat \
+    gcompat \
     libffi-dev \
     openssl-dev \
     rust \
     cargo \
-    git
+    git \
+    python3-dev
 
 # Install Python dependencies and ESPHome
 COPY requirements.txt /tmp/
