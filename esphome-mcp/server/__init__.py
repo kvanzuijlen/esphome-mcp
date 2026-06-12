@@ -1,0 +1,1 @@
+"""ESPHome MCP Server package."""

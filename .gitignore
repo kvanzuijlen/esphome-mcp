@@ -1,0 +1,16 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest
+.pytest_cache/
+
+# Local add-on / HA state files
+.data/
+/data/
+auth_token
+
+# OS files
+.DS_Store
+Thumbs.db
