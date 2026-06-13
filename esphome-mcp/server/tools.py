@@ -298,6 +298,10 @@ def push_file_chunk(filename: str, content: str, append: bool = False) -> str:
         target = safe_path(ESPHOME_DIR, filename)
         os.makedirs(os.path.dirname(target), exist_ok=True)
 
+        # Ensure the chunk ends with a newline to prevent joined lines on subsequent appends
+        if content and not content.endswith("\n"):
+            content += "\n"
+
         mode = "a" if append else "w"
         with open(target, mode, encoding="utf-8", newline="\n") as f:
             f.write(content)
