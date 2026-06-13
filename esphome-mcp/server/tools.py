@@ -286,6 +286,31 @@ def push_files(files: dict[str, str]) -> str:
     return "Push results:\n" + "\n".join(results)
 
 
+def push_file_chunk(filename: str, content: str, append: bool = False) -> str:
+    """Push a chunk of content to a YAML file in the ESPHome config directory safely."""
+    if _is_forbidden(filename):
+        return f"Error: {filename} is REJECTED (secrets files cannot be pushed)"
+    if not filename.endswith(".yaml"):
+        return f"Error: {filename} is REJECTED (only .yaml files allowed)"
+
+    try:
+        # Enforce path traversal check
+        target = safe_path(ESPHOME_DIR, filename)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+
+        mode = "a" if append else "w"
+        with open(target, mode, encoding="utf-8", newline="\n") as f:
+            f.write(content)
+        
+        action = "Appended to" if append else "Created/Overwrote"
+        size = os.path.getsize(target)
+        return f"Success: {action} {filename}. Current file size: {size} bytes."
+    except PermissionError as e:
+        return f"Error: {filename} REJECTED ({e})"
+    except OSError as e:
+        return f"Error: {filename} ERROR ({e})"
+
+
 def pull_files(filenames: list[str] | None = None) -> dict[str, str]:
     """Read YAML files from the ESPHome config directory safely."""
     result = {}

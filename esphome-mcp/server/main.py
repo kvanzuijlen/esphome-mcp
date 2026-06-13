@@ -123,6 +123,25 @@ def esphome_push_files(files: dict[str, str]) -> str:
 
 
 @mcp.tool()
+def esphome_push_file_chunk(filename: str, content: str, append: bool = False) -> str:
+    """Push a chunk of content to a YAML config file on Home Assistant.
+
+    Allows transferring large files (e.g., >30KB or >800 lines) in smaller, manageable chunks
+    to bypass size and output truncation limits of AI clients.
+
+    To upload a large file:
+    1. Call this tool with append=False and the first chunk (which overwrites/creates the file).
+    2. Call this tool with append=True and the subsequent chunks in order.
+
+    Args:
+        filename: Target YAML filename (e.g. 'livingroom.yaml' or 'archive/livingroom.yaml').
+        content: The text content of this chunk.
+        append: If True, appends to the file. If False, overwrites/creates the file. Defaults to False.
+    """
+    return tools.push_file_chunk(filename, content, append)
+
+
+@mcp.tool()
 def esphome_pull_files(filenames: list[str] | None = None) -> str:
     """Pull YAML config files from the ESPHome directory on Home Assistant.
 

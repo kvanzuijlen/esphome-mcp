@@ -231,3 +231,25 @@ def test_validate_uses_custom_timeout(monkeypatch, tmp_path):
     asyncio.run(tools.validate("mydevice"))
     assert timeout_called == 7
 
+
+def test_push_file_chunk(monkeypatch, tmp_path):
+    monkeypatch.setattr(tools, "ESPHOME_DIR", str(tmp_path))
+    
+    # Overwrite/Create first chunk
+    res = tools.push_file_chunk("test_chunk.yaml", "line1\n", append=False)
+    assert "Success" in res
+    assert (tmp_path / "test_chunk.yaml").read_text() == "line1\n"
+    
+    # Append second chunk
+    res2 = tools.push_file_chunk("test_chunk.yaml", "line2\n", append=True)
+    assert "Success" in res2
+    assert (tmp_path / "test_chunk.yaml").read_text() == "line1\nline2\n"
+
+    # Reject forbidden file
+    res3 = tools.push_file_chunk("secrets.yaml", "secret content\n", append=False)
+    assert "REJECTED" in res3
+
+    # Reject non-yaml file
+    res4 = tools.push_file_chunk("test.txt", "txt content\n", append=False)
+    assert "REJECTED" in res4
+
