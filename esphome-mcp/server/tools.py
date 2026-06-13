@@ -254,6 +254,13 @@ async def logs(device: str, num_lines: int = 50, duration: int = 5, port: str = 
 
 def push_files(files: dict[str, str]) -> str:
     """Write YAML files to the ESPHome config directory safely."""
+    if not isinstance(files, dict):
+        return (
+            f"Error: The 'files' argument must be a dictionary (JSON object) mapping "
+            f"filenames to their YAML contents. Example:\n"
+            f'{{"device.yaml": "esphome:\\n  name: statusdisplay\\n..."}}\n'
+            f"Got: {type(files).__name__} ({files!r}). Please retry with a dictionary."
+        )
     results = []
     for filename, content in files.items():
         if _is_forbidden(filename):
@@ -326,6 +333,13 @@ def pull_files(filenames: list[str] | None = None) -> dict[str, str]:
 
 def push_fonts(files: dict[str, str]) -> str:
     """Write font files to the ESPHome fonts directory safely."""
+    if not isinstance(files, dict):
+        return (
+            f"Error: The 'files' argument must be a dictionary (JSON object) mapping "
+            f"font filenames to their base64-encoded file contents. Example:\n"
+            f'{{"font.ttf": "YmFzZTY0IGNvbnRlbnQ="}}\n'
+            f"Got: {type(files).__name__} ({files!r}). Please retry with a dictionary."
+        )
     fonts_dir = os.path.join(ESPHOME_DIR, "fonts")
     os.makedirs(fonts_dir, exist_ok=True)
 

@@ -111,9 +111,13 @@ def esphome_push_files(files: dict[str, str]) -> str:
 
     Writes files to /config/esphome/. Rejects secrets.yaml.
 
+    IMPORTANT: The 'files' parameter MUST be a dictionary/object mapping filenames
+    to their complete file contents. Do NOT pass a number, count of files, or list of names.
+
     Args:
-        files: Dict mapping filename to YAML content.
-               Use 'archive/name.yaml' for archived configs.
+        files: A dictionary mapping target filename to its YAML file content.
+               Example: {"livingroom.yaml": "esphome:\n  name: livingroom\n..."}
+               Use "archive/filename.yaml" as the key to push/update archived configurations.
     """
     return tools.push_files(files)
 
@@ -136,8 +140,12 @@ def esphome_pull_files(filenames: list[str] | None = None) -> str:
 def esphome_push_fonts(files: dict[str, str]) -> str:
     """Push font files to the ESPHome fonts directory on Home Assistant.
 
+    IMPORTANT: The 'files' parameter MUST be a dictionary/object mapping font filenames
+    to their base64-encoded file contents. Do NOT pass a number, count of files, or list of names.
+
     Args:
-        files: Dict mapping filename to base64-encoded file content.
+        files: A dictionary mapping font filename to its base64-encoded file content.
+               Example: {"font.ttf": "YmFzZTY0IGNvbnRlbnQ="}
     """
     return tools.push_fonts(files)
 
