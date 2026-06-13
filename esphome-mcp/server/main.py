@@ -45,6 +45,8 @@ async def esphome_validate(device: str, timeout: int | None = None) -> str:
 
     Verifies syntax and semantic configuration. Useful to run before esphome_compile or esphome_flash to check for configuration errors.
 
+    IMPORTANT: If you have created or edited the device's configuration file locally in your workspace, you MUST first call esphome_push_files to upload the updated file(s) to the Home Assistant server before running this validation.
+
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
         timeout: Optional override for the command timeout in seconds.
@@ -60,6 +62,8 @@ async def esphome_compile(device: str, timeout: int | None = None) -> str:
     Use esphome_flash instead if you want to compile AND upload it to the device.
     Note: Compilations can take several minutes on slower hosts. The AI client can increase the timeout parameter for the initial compilation.
 
+    IMPORTANT: If you have created or edited the device's configuration file locally in your workspace, you MUST first call esphome_push_files to upload the updated file(s) to the Home Assistant server before running this compilation.
+
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
         timeout: Optional override for the command timeout in seconds.
@@ -74,6 +78,8 @@ async def esphome_flash(device: str, port: str = "OTA", timeout: int | None = No
     Compiles and uploads the firmware. It is recommended to run esphome_validate
     first to verify syntax, and highly recommended to run esphome_logs immediately after
     flashing completes to verify that the device successfully booted and connected to services.
+
+    IMPORTANT: If you have created or edited the device's configuration file locally in your workspace, you MUST first call esphome_push_files to upload the updated file(s) to the Home Assistant server before flashing.
 
     Args:
         device: Device name (e.g. 'statusdisplay') or YAML filename. Use esphome_list_devices to discover available devices.
