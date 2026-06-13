@@ -130,8 +130,9 @@ def esphome_push_file_chunk(filename: str, content: str, append: bool = False) -
     to bypass size and output truncation limits of AI clients.
 
     To upload a large file:
-    1. Call this tool with append=False and the first chunk (which overwrites/creates the file).
-    2. Call this tool with append=True and the subsequent chunks in order.
+    1. Explicitly explain to the user in chat that you are pushing the file in chunks due to size limits, explaining that you will use append=False for the first chunk (to create/overwrite the file) and append=True for subsequent chunks.
+    2. Call this tool with append=False and the first chunk.
+    3. Call this tool with append=True and the subsequent chunks in order, keeping the user updated on progress.
 
     Args:
         filename: Target YAML filename (e.g. 'livingroom.yaml' or 'archive/livingroom.yaml').
